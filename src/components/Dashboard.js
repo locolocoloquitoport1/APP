@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import BuoyStatus from "./BuoyStatus";
 import BuoySelector from "./BuoySelector";
 import BuoyMap from "./BuoyMap";
 import VariableCard from "./VariableCard";
 
 export default function Dashboard() {
-  // === Definición de boyas con coordenadas ===
+  // === Coordenadas de boyas ===
   const buoyPositions = {
     1: { name: "Boya 1", lat: 11.04083, lng: -74.86389 },
     2: { name: "Boya 2", lat: 11.03556, lng: -74.85389 },
@@ -16,74 +16,111 @@ export default function Dashboard() {
     7: { name: "Boya 7", lat: 11.04861, lng: -74.85472 },
   };
 
-  // === Inicializa mostrando Boya 3 ===
   const [selectedBuoy, setSelectedBuoy] = useState(3);
+  const [variablesPorBoya, setVariablesPorBoya] = useState({});
+  const intervalRef = useRef(null);
   const coords = buoyPositions[selectedBuoy];
-  const [variables, setVariables] = useState([]);
+  const variables = variablesPorBoya[selectedBuoy] || [];
 
-  // === Generador de datos aleatorios con posible anomalía ===
-  const generarDatos = (min, max, n = 50, anomalyChance = 0.05) =>
-    Array.from({ length: n }, (_, i) => {
-      let val = Math.random() * (max - min) + min;
-      if (Math.random() < anomalyChance) {
-        const factor = Math.random() < 0.5 ? 0.5 : 1.5;
-        val = val * factor;
-      }
-      return { x: i + 1, y: Number(val.toFixed(2)) };
-    });
+  // === Generar una lectura aleatoria ===
+  const generarLectura = (min, max, variacion = 0.05) => {
+    const base = Math.random() * (max - min) + min;
+    const factor = 1 + (Math.random() * 2 - 1) * variacion;
+    return Number((base * factor).toFixed(2));
+  };
 
-  // === Crear conjunto de variables con datos ===
+  // === Crear conjunto inicial de variables ===
   const crearVariables = () => [
     {
       title: "pH",
+      unidad: "",
       color: "#38bdf8",
-      stats: { Promedio: "En rango", Mínimo: 7, Máximo: 9, Lecturas: 50 },
-      data: generarDatos(7, 9),
+      data: Array.from({ length: 10 }, (_, i) => ({
+        x: i + 1,
+        y: generarLectura(7, 9),
+      })),
     },
     {
       title: "Temperatura (°C)",
+      unidad: "°C",
       color: "#fb923c",
-      stats: { Promedio: "29 – 31.5", Mínimo: 25, Máximo: "<40", Lecturas: 50 },
-      data: generarDatos(25, 40),
+      data: Array.from({ length: 10 }, (_, i) => ({
+        x: i + 1,
+        y: generarLectura(25, 40),
+      })),
     },
     {
       title: "Conductividad (µS/cm)",
+      unidad: "µS/cm",
       color: "#a855f7",
-      stats: {
-        Promedio: "2034 - 24730",
-        Mínimo: 5000,
-        Máximo: 30000,
-        Lecturas: 50,
-      },
-      data: generarDatos(5000, 30000),
+      data: Array.from({ length: 10 }, (_, i) => ({
+        x: i + 1,
+        y: generarLectura(5000, 30000),
+      })),
     },
     {
       title: "Oxígeno Disuelto (mg/L)",
+      unidad: "mg/L",
       color: "#22c55e",
-      stats: { Promedio: "3.98 - 6.01", Mínimo: "<3", Lecturas: 50 },
-      data: generarDatos(3, 6),
+      data: Array.from({ length: 10 }, (_, i) => ({
+        x: i + 1,
+        y: generarLectura(3, 6),
+      })),
     },
     {
       title: "Turbidez (NTU)",
+      unidad: "NTU",
       color: "#ef4444",
-      stats: { Promedio: "6.9 – 67.8", Máximo: 2, Lecturas: 50 },
-      data: generarDatos(6.9, 67.8),
+      data: Array.from({ length: 10 }, (_, i) => ({
+        x: i + 1,
+        y: generarLectura(6.9, 67.8),
+      })),
     },
   ];
 
-  // === Inicialización y actualización periódica ===
+  // === Inicialización por boya ===
   useEffect(() => {
-    setVariables(crearVariables());
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVariables(crearVariables());
-    }, 60000); // 1 minuto
-    return () => clearInterval(interval);
+    setVariablesPorBoya((prev) => {
+      if (prev[selectedBuoy]) return prev;
+      return { ...prev, [selectedBuoy]: crearVariables() };
+    });
   }, [selectedBuoy]);
 
-  // === Cálculo de promedios dinámicos ===
+  // === Actualización en tiempo real (cada 5 s) ===
+  useEffect(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    intervalRef.current = setInterval(() => {
+      setVariablesPorBoya((prev) => {
+        const copia = { ...prev };
+        const vars = copia[selectedBuoy];
+        if (!vars) return prev;
+
+        copia[selectedBuoy] = vars.map((v) => {
+          const nextX = v.data.length + 1;
+          const newY = (() => {
+            switch (v.title) {
+              case "pH": return generarLectura(7, 9);
+              case "Temperatura (°C)": return generarLectura(25, 40);
+              case "Conductividad (µS/cm)": return generarLectura(5000, 30000);
+              case "Oxígeno Disuelto (mg/L)": return generarLectura(3, 6);
+              case "Turbidez (NTU)": return generarLectura(6.9, 67.8);
+              default: return generarLectura(0, 1);
+            }
+          })();
+          const nuevosDatos = [...v.data, { x: nextX, y: newY }];
+          // mantener máximo 50 puntos
+          if (nuevosDatos.length > 50) nuevosDatos.shift();
+          return { ...v, data: nuevosDatos };
+        });
+        return copia;
+      });
+    }, 5000);
+
+    return () => clearInterval(intervalRef.current);
+  }, [selectedBuoy]);
+
+  // === Promedios dinámicos ===
   const promedios = useMemo(() => {
     const findAvg = (title) => {
       const variable = variables.find((v) => v.title.includes(title));
@@ -101,7 +138,6 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* Panel superior dinámico */}
       <BuoyStatus
         buoyId={selectedBuoy}
         buoyName={coords.name}
@@ -111,13 +147,9 @@ export default function Dashboard() {
         oxigeno={`${promedios.oxi} mg/L`}
       />
 
-      {/* Selector de boya */}
       <BuoySelector selected={selectedBuoy} onChange={setSelectedBuoy} />
-
-      {/* Mapa */}
       <BuoyMap selectedBuoy={selectedBuoy} />
 
-      {/* Panel de variables */}
       <div className="variable-row">
         {variables.map((v, idx) => (
           <VariableCard key={idx} {...v} />
