@@ -5,17 +5,19 @@ import BuoyMap from "./BuoyMap";
 import VariableCard from "./VariableCard";
 
 export default function Dashboard() {
+  // === Definición de boyas con coordenadas ===
   const buoyPositions = {
-    1: { lat: 11.04083, lng: -74.86389 },
-    2: { lat: 11.03556, lng: -74.85389 },
-    3: { lat: 11.045, lng: -74.84778 },
-    4: { lat: 11.0375, lng: -74.83944 },
-    5: { lat: 11.04583, lng: -74.83778 },
-    6: { lat: 11.05472, lng: -74.84444 },
-    7: { lat: 11.04861, lng: -74.85472 },
+    1: { name: "Boya 1", lat: 11.04083, lng: -74.86389 },
+    2: { name: "Boya 2", lat: 11.03556, lng: -74.85389 },
+    3: { name: "Boya 3", lat: 11.045, lng: -74.84778 },
+    4: { name: "Boya 4", lat: 11.0375, lng: -74.83944 },
+    5: { name: "Boya 5", lat: 11.04583, lng: -74.83778 },
+    6: { name: "Boya 6", lat: 11.05472, lng: -74.84444 },
+    7: { name: "Boya 7", lat: 11.04861, lng: -74.85472 },
   };
 
-  const [selectedBuoy, setSelectedBuoy] = useState(1);
+  // === Inicializa mostrando Boya 3 ===
+  const [selectedBuoy, setSelectedBuoy] = useState(3);
   const coords = buoyPositions[selectedBuoy];
   const [variables, setVariables] = useState([]);
 
@@ -99,9 +101,10 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      {/* Panel superior con valores dinámicos */}
+      {/* Panel superior dinámico */}
       <BuoyStatus
         buoyId={selectedBuoy}
+        buoyName={coords.name}
         coords={coords}
         ph={promedios.ph}
         temperatura={`${promedios.temp} °C`}
