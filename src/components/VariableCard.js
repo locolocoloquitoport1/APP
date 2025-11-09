@@ -26,7 +26,8 @@ export default function VariableCard({ title, color, data, unidad }) {
               offset: -5,
             }}
             tick={{ fontSize: 12 }}
-            domain={["auto", "auto"]}
+            domain={["dataMin", "dataMax"]}
+            allowDecimals={false}
           />
           <YAxis
             type="number"
@@ -41,8 +42,47 @@ export default function VariableCard({ title, color, data, unidad }) {
             tick={{ fontSize: 12 }}
             domain={["auto", "auto"]}
           />
-          <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-          <Scatter data={data} fill={color} />
+
+          {/* ✅ Tooltip corregido — muestra número de lectura y valor */}
+          <Tooltip
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                const punto = payload[0].payload;
+                const lectura = punto.x;
+                const valor = punto.y;
+
+                return (
+                  <div
+                    style={{
+                      backgroundColor: "rgba(0, 0, 0, 0.75)",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      color: "#fff",
+                      fontSize: "13px",
+                      lineHeight: "1.5",
+                    }}
+                  >
+                    <div>
+                      <strong>No. Lectura:</strong> {lectura}
+                    </div>
+                    <div>
+                      <strong>{title}:</strong> {valor} {unidad}
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }}
+            cursor={{ strokeDasharray: "3 3" }}
+          />
+
+          <Scatter
+            data={data.map((p, i) => ({ ...p, key: `${title}-${i}` }))}
+            fill={color}
+            shape="circle"
+            r={4}
+            isAnimationActive={false}
+          />
         </ScatterChart>
       </ResponsiveContainer>
     </div>

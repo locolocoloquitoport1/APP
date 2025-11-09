@@ -5,7 +5,6 @@ import BuoyMap from "./BuoyMap";
 import VariableCard from "./VariableCard";
 
 export default function Dashboard() {
-  // === Coordenadas de boyas ===
   const buoyPositions = {
     1: { name: "Boya 1", lat: 11.04083, lng: -74.86389 },
     2: { name: "Boya 2", lat: 11.03556, lng: -74.85389 },
@@ -22,22 +21,88 @@ export default function Dashboard() {
   const coords = buoyPositions[selectedBuoy];
   const variables = variablesPorBoya[selectedBuoy] || [];
 
-  // === Generar una lectura aleatoria ===
-  const generarLectura = (min, max, variacion = 0.05) => {
-    const base = Math.random() * (max - min) + min;
-    const factor = 1 + (Math.random() * 2 - 1) * variacion;
-    return Number((base * factor).toFixed(2));
+  // === GENERADOR DE DATOS FÍSICAMENTE COHERENTES CON ANOMALÍAS ===
+  const generarLecturaFisica = (variable, buoyId) => {
+    const probAnomalia = 0.04; // 4% de probabilidad global de anomalía
+    const esAnomalia =
+      Math.random() < (variable.includes("Turbidez") ? 0.08 : probAnomalia); // mayor probabilidad en turbidez
+
+    switch (variable) {
+      case "pH": {
+        if (esAnomalia) {
+          // fuera de rango
+          return +(6 + Math.random() * 4).toFixed(2);
+        }
+        return +(7.8 + (Math.random() - 0.5) * 0.6).toFixed(2);
+      }
+
+      case "Temperatura (°C)": {
+        if (esAnomalia) {
+          // demasiado baja o alta
+          return +(Math.random() < 0.5
+            ? 20 + Math.random() * 5
+            : 35 + Math.random() * 8
+          ).toFixed(2);
+        }
+        return +(30.2 + (Math.random() - 0.5) * 0.8).toFixed(2);
+      }
+
+      case "Conductividad (µS/cm)": {
+        const alta = [1, 6, 7].includes(buoyId);
+        const baseMin = alta ? 18000 : 7000;
+        const baseMax = alta ? 30000 : 22000;
+
+        if (esAnomalia) {
+          // valor fuera de rango (mucho menor o mayor)
+          return +(Math.random() < 0.5
+            ? 2000 + Math.random() * 3000
+            : 30000 + Math.random() * 10000
+          ).toFixed(0);
+        }
+
+        return +(baseMin + Math.random() * (baseMax - baseMin)).toFixed(0);
+      }
+
+      case "Oxígeno Disuelto (mg/L)": {
+        if (esAnomalia) {
+          // valores extremos
+          return +(Math.random() < 0.5
+            ? 1 + Math.random() * 1.5
+            : 7 + Math.random() * 2
+          ).toFixed(2);
+        }
+        const temp = 30.2 + (Math.random() - 0.5) * 0.8;
+        const oxi = 6.3 - 0.07 * (temp - 29) + (Math.random() - 0.5) * 0.3;
+        return +Math.max(3.5, Math.min(6.5, oxi)).toFixed(2);
+      }
+
+      case "Turbidez (NTU)": {
+        if (esAnomalia) {
+          // anomalías más comunes: valores extremos
+          let val = Math.random() < 0.5
+            ? 0 + Math.random() * 5 // turbidez anómalamente baja
+            : 250 + Math.random() * 100; // extremadamente alta
+          return +Math.min(val, 350).toFixed(1);
+        }
+        let val = 40 + Math.random() * 60;
+        if (Math.random() < 0.1) val += Math.random() * 100; // picos naturales
+        return +Math.min(val, 250).toFixed(1);
+      }
+
+      default:
+        return +(Math.random() * 10).toFixed(2);
+    }
   };
 
-  // === Crear conjunto inicial de variables ===
-  const crearVariables = () => [
+  // === CREAR CONJUNTO INICIAL DE VARIABLES ===
+  const crearVariables = (buoyId) => [
     {
       title: "pH",
-      unidad: "",
+      unidad: "pH",
       color: "#38bdf8",
       data: Array.from({ length: 10 }, (_, i) => ({
         x: i + 1,
-        y: generarLectura(7, 9),
+        y: generarLecturaFisica("pH", buoyId),
       })),
     },
     {
@@ -46,7 +111,7 @@ export default function Dashboard() {
       color: "#fb923c",
       data: Array.from({ length: 10 }, (_, i) => ({
         x: i + 1,
-        y: generarLectura(25, 40),
+        y: generarLecturaFisica("Temperatura (°C)", buoyId),
       })),
     },
     {
@@ -55,7 +120,7 @@ export default function Dashboard() {
       color: "#a855f7",
       data: Array.from({ length: 10 }, (_, i) => ({
         x: i + 1,
-        y: generarLectura(5000, 30000),
+        y: generarLecturaFisica("Conductividad (µS/cm)", buoyId),
       })),
     },
     {
@@ -64,7 +129,7 @@ export default function Dashboard() {
       color: "#22c55e",
       data: Array.from({ length: 10 }, (_, i) => ({
         x: i + 1,
-        y: generarLectura(3, 6),
+        y: generarLecturaFisica("Oxígeno Disuelto (mg/L)", buoyId),
       })),
     },
     {
@@ -73,20 +138,20 @@ export default function Dashboard() {
       color: "#ef4444",
       data: Array.from({ length: 10 }, (_, i) => ({
         x: i + 1,
-        y: generarLectura(6.9, 67.8),
+        y: generarLecturaFisica("Turbidez (NTU)", buoyId),
       })),
     },
   ];
 
-  // === Inicialización por boya ===
+  // === INICIALIZACIÓN POR BOYA ===
   useEffect(() => {
     setVariablesPorBoya((prev) => {
       if (prev[selectedBuoy]) return prev;
-      return { ...prev, [selectedBuoy]: crearVariables() };
+      return { ...prev, [selectedBuoy]: crearVariables(selectedBuoy) };
     });
   }, [selectedBuoy]);
 
-  // === Actualización en tiempo real (cada 5 s) ===
+  // === ACTUALIZACIÓN CADA 5 SEGUNDOS ===
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
 
@@ -98,18 +163,8 @@ export default function Dashboard() {
 
         copia[selectedBuoy] = vars.map((v) => {
           const nextX = v.data.length + 1;
-          const newY = (() => {
-            switch (v.title) {
-              case "pH": return generarLectura(7, 9);
-              case "Temperatura (°C)": return generarLectura(25, 40);
-              case "Conductividad (µS/cm)": return generarLectura(5000, 30000);
-              case "Oxígeno Disuelto (mg/L)": return generarLectura(3, 6);
-              case "Turbidez (NTU)": return generarLectura(6.9, 67.8);
-              default: return generarLectura(0, 1);
-            }
-          })();
+          const newY = generarLecturaFisica(v.title, selectedBuoy);
           const nuevosDatos = [...v.data, { x: nextX, y: newY }];
-          // mantener máximo 50 puntos
           if (nuevosDatos.length > 50) nuevosDatos.shift();
           return { ...v, data: nuevosDatos };
         });
@@ -120,7 +175,7 @@ export default function Dashboard() {
     return () => clearInterval(intervalRef.current);
   }, [selectedBuoy]);
 
-  // === Promedios dinámicos ===
+  // === PROMEDIOS DINÁMICOS ===
   const promedios = useMemo(() => {
     const findAvg = (title) => {
       const variable = variables.find((v) => v.title.includes(title));
