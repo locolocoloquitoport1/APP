@@ -15,7 +15,7 @@ export default function ModelMetrics({ metricas = {}, randomForest = null }) {
 
   return (
     <div className="rf-panel">
-      <h3 className="rf-title">🔎 Módulo Random Forest — Detección de Anomalías</h3>
+      <h3 className="rf-title"> Detección de Anomalías</h3>
 
       <div className="rf-metrics">
         {barras.map((b, i) => (

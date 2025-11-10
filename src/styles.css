@@ -1,16 +1,52 @@
 /* =========================
    GLOBAL
 ========================= */
+
+:root{
+  /* Paleta y variables para fácil ajuste */
+  --bg-1: #001c36;
+  --bg-2: #002b55;
+  --glass: rgba(255,255,255,0.04);
+  --card-bg: rgba(2,20,34,0.55);
+  --muted: #dbeafe;
+  --text: #f5faff;
+  --accent: #3b82f6;
+  --accent-2: #60a5fa;
+  --accent-3: #10b981;
+  --success: #22c55e;
+  --danger: #ff6961;
+  --warning: #fbbf24;
+  --glass-strong: rgba(255,255,255,0.03);
+  --glass-weak: rgba(255,255,255,0.02);
+  --shadow-dark: rgba(2,6,23,0.6);
+}
+
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
-  background: linear-gradient(160deg, #001c36, #002b55 80%);
-  color: #f5faff;
+  /* Fondo más sutil y moderno */
+  background:
+    radial-gradient(1200px 600px at 10% 20%, rgba(59,130,246,0.06), transparent 12%),
+    linear-gradient(160deg, var(--bg-1), var(--bg-2) 80%);
+  color: var(--text);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-attachment: fixed;
+  transition: background-color 0.25s ease;
 }
 
 h1, h2, h3, h4, h5, p, label, td {
   color: #ffffff;
+  margin: 0;
+}
+
+/* pequeñas utilidades */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* =========================
@@ -22,22 +58,34 @@ h1, h2, h3, h4, h5, p, label, td {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: radial-gradient(circle at 30% 30%, #00264d, #001429);
-  color: #f5faff;
-  animation: fadeIn 1s ease-in-out;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(96,165,250,0.06), rgba(0,22,40,0.7)),
+    linear-gradient(160deg, rgba(0,22,40,0.85), rgba(0,10,20,0.95));
+  color: var(--text);
+  animation: fadeIn 1s ease-in-out both;
+  padding: 24px;
 }
 
 .login-container h2 {
   margin-bottom: 20px;
   font-size: 1.9rem;
-  letter-spacing: 1px;
+  letter-spacing: 0.6px;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 6px 18px rgba(11,27,46,0.28);
 }
 
 .login-container form {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: 280px;
+  width: 320px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 8px 28px rgba(4,10,20,0.6);
+  backdrop-filter: blur(6px) saturate(120%);
 }
 
 .login-container input {
@@ -45,37 +93,51 @@ h1, h2, h3, h4, h5, p, label, td {
   border: none;
   border-radius: 10px;
   outline: none;
-  background: #0b1b2e;
-  color: #f5faff;
+  background: #071726;
+  color: var(--text);
   font-size: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: box-shadow 0.18s ease, transform 0.12s ease;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.35);
+}
+.login-container input:focus{
+  box-shadow: 0 6px 24px rgba(59,130,246,0.12);
+  transform: translateY(-1px);
 }
 
 .login-container button {
   padding: 12px;
-  background-color: #0077b6;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
   color: white;
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  font-weight: 700;
+  transition: transform 0.26s cubic-bezier(.2,.9,.2,1), box-shadow 0.26s;
+  box-shadow: 0 8px 20px rgba(59,130,246,0.14);
 }
-
 .login-container button:hover {
-  background-color: #0096c7;
-  transform: scale(1.03);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 18px 40px rgba(59,130,246,0.18);
 }
 
 .error {
   margin-top: 8px;
-  color: #ff6961;
+  color: var(--danger);
   font-size: 0.9rem;
 }
 
+/* =========================
+   ANIMATIONS
+========================= */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -240px 0; }
+  100% { background-position: 240px 0; }
 }
 
 /* =========================
@@ -83,10 +145,22 @@ h1, h2, h3, h4, h5, p, label, td {
 ========================= */
 .dashboard-container {
   padding: 30px 50px;
-  background: linear-gradient(160deg, #001c36, #002b55 80%);
+  background: linear-gradient(160deg, var(--bg-1), var(--bg-2) 80%);
   min-height: 100vh;
   color: #ffffff;
-  animation: fadeIn 0.6s ease-in-out;
+  animation: fadeIn 0.6s ease-in-out both;
+  position: relative; /* necesario para overlay pseudo-element */
+}
+
+/* overlay cuando un card está expandido (agregar clase .has-expanded al contenedor desde JS) */
+.dashboard-container.has-expanded::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(2,6,23,0.56);
+  z-index: 1100;
+  backdrop-filter: blur(2px);
+  pointer-events: none;
 }
 
 /* =========================
@@ -96,12 +170,13 @@ h1, h2, h3, h4, h5, p, label, td {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(0, 47, 95, 0.6);
+  background: linear-gradient(90deg, rgba(0,47,95,0.45), rgba(0,30,60,0.3));
   border-radius: 20px;
   padding: 20px 30px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 26px rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid var(--glass-strong);
 }
 
 .header-left {
@@ -119,6 +194,7 @@ h1, h2, h3, h4, h5, p, label, td {
 .coords {
   font-size: 0.95rem;
   color: #dbeafe;
+  opacity: 0.95;
 }
 
 .status {
@@ -128,33 +204,35 @@ h1, h2, h3, h4, h5, p, label, td {
 }
 
 .online-text {
-  color: #22c55e;
-  font-weight: 600;
+  color: var(--success);
+  font-weight: 700;
 }
 
 .header-right {
   display: flex;
   gap: 20px;
+  align-items: center;
 }
 
+/* env boxes */
 .env-box {
-  background: rgba(0, 60, 120, 0.4);
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
   border-radius: 12px;
   padding: 10px 18px;
   text-align: center;
   min-width: 110px;
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 8px 20px rgba(2,6,23,0.35);
 }
-
 .env-box h4 {
   margin: 0;
   font-size: 0.95rem;
   color: #bae6fd;
 }
-
 .env-box p {
   margin: 4px 0 0;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* =========================
@@ -166,142 +244,226 @@ h1, h2, h3, h4, h5, p, label, td {
   gap: 10px;
   margin: 10px 0 20px;
 }
-
 .buoy-selector label {
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
 }
-
 .buoy-selector select {
-  background: #0b1b2e;
-  color: #f5faff;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 8px;
-  padding: 6px 12px;
+  background: #061526;
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 8px 14px;
   font-size: 0.95rem;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.35);
 }
 
 /* =========================
    MAPA
 ========================= */
 .map-container {
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.45);
   margin-bottom: 30px;
+  border: 1px solid rgba(255,255,255,0.02);
 }
 
 /* =========================
    VARIABLES Y GRAFICAS
+   Ahora con layout en grid: 3 en la primera fila, 2 en la siguiente
 ========================= */
 .variable-row {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas en desktop */
   gap: 20px;
+  align-items: start;
 }
 
+/* tarjeta más grande por defecto */
 .variable-card {
-  background: rgba(0, 47, 95, 0.5);
+  position: relative;
+  background: linear-gradient(180deg, rgba(2,20,34,0.64), rgba(3,36,60,0.5));
   border-radius: 16px;
-  padding: 16px;
-  flex: 1 1 calc(20% - 20px);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
-  min-width: 250px;
-  transition: transform 0.2s ease;
+  padding: 22px;
+  /* ya no usamos flex-basis; con grid se maneja el tamaño */
+  box-shadow: 0 12px 36px rgba(2,6,23,0.48);
+  min-width: 0;
+  min-height: 220px;
+  transition: transform 0.22s cubic-bezier(.2,.9,.2,1), box-shadow 0.22s, opacity 0.18s;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.03);
+  cursor: pointer;
+}
+
+/* ligero brillo suave en tarjetas */
+.variable-card::before{
+  content: "";
+  position: absolute;
+  left: -40%;
+  top: -40%;
+  width: 180%;
+  height: 180%;
+  background: radial-gradient(600px 200px at 30% 30%, rgba(255,255,255,0.02), transparent 18%);
+  transform: rotate(-12deg);
+  pointer-events: none;
 }
 
 .variable-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
+  box-shadow: 0 28px 56px rgba(2,6,23,0.55);
 }
 
+/* estado cuando un card está expandido — requiere que JS añada la clase 'expanded' al card y 'has-expanded' al .dashboard-container */
+.variable-card.expanded {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: min(1100px, 94%);
+  max-height: 88vh;
+  overflow: auto;
+  z-index: 1200; /* por encima del overlay */
+  border-radius: 16px;
+  box-shadow: 0 40px 120px rgba(2,6,23,0.78);
+  transition: transform 0.32s cubic-bezier(.18,.9,.22,1), box-shadow 0.32s, opacity 0.22s;
+}
+
+/* cuando hay un expandido, atenuar/recortar las demás tarjetas */
+.dashboard-container.has-expanded .variable-card:not(.expanded) {
+  filter: blur(2px) saturate(.9);
+  opacity: 0.28;
+  transform: scale(0.98);
+  pointer-events: none;
+}
+
+/* título y tabla */
 .variable-title {
   font-size: 1.05rem;
   color: #ffffff;
   margin-bottom: 10px;
+  font-weight: 700;
 }
 
 .variable-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: #e0f2fe;
 }
-
 .variable-table td {
   padding: 4px 0;
 }
 
+/* Contenedor de la gráfica: más espacio y fondo sutil para que el canvas destaque */
 .chart-container {
   margin-top: 10px;
-  height: 150px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+  border: 1px solid rgba(255,255,255,0.02);
+  box-shadow: inset 0 -2px 8px rgba(0,0,0,0.35);
+  transition: box-shadow 0.25s, transform 0.25s;
+}
+
+/* mejoras específicas para canvas: asegurar tamaño y añadir micro-interacción */
+.chart-container:hover { box-shadow: inset 0 -2px 14px rgba(0,0,0,0.42); transform: translateY(-2px); }
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  border-radius: 10px;
+  /* ligero antialias visual */
+  image-rendering: -webkit-optimize-contrast;
+  transition: transform 0.45s cubic-bezier(.2,.9,.3,1), box-shadow 0.45s;
+  will-change: transform;
+}
+
+/* clase utilitaria por si las gráficas se renderizan como SVG */
+.smooth-line path, .smooth-line polyline, .smooth-line line {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* si aplicas clases desde JS: suavizar puntos */
+.smooth-line circle {
+  r: 3.6;
+  stroke: rgba(255,255,255,0.9);
+  fill: rgba(255,255,255,0.06);
+  transition: r 0.18s ease;
+}
+
+/* efecto de micro-hover del canvas para énfasis */
+.chart-container .chart-hover {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.00) 0%, rgba(255,255,255,0.01) 50%, rgba(255,255,255,0.00) 100%);
+  background-size: 480px 100%;
+  animation: shimmer 3.2s linear infinite;
+  mix-blend-mode: overlay;
+  opacity: 0.12;
 }
 
 /* =========================
    RESPONSIVE
+   Mantener 3/2/1 columnas según ancho para lograr 3 arriba y 2 debajo en la mayoría de layouts
 ========================= */
+@media (min-width: 1400px) {
+  .chart-container { height: 220px; }
+}
 @media (max-width: 1200px) {
-  .variable-card { flex: 1 1 calc(33% - 20px); }
+  /* mantener 3 columnas si cabe, si no se ajusta se hará wrapping natural */
+  .variable-row { grid-template-columns: repeat(3, 1fr); }
 }
-
-@media (max-width: 900px) {
-  .variable-card { flex: 1 1 calc(50% - 20px); }
-  .dashboard-header-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
+@media (max-width: 1000px) {
+  .variable-row { grid-template-columns: repeat(2, 1fr); } /* 2 columnas en tablet: quedarán 2 + 2 + 1... */
+  .variable-card { min-height: 200px; padding: 18px; }
 }
-
 @media (max-width: 600px) {
-  .variable-card { flex: 1 1 100%; }
+  .variable-row { grid-template-columns: 1fr; } /* columna única */
+  .variable-card { min-height: 160px; padding: 14px; }
   .header-right { flex-wrap: wrap; }
 }
 
 /* =========================
    RANDOM FOREST MODULE
+   Asegurado que siempre quede debajo de las tarjetas (depende del orden del DOM)
 ========================= */
-
 .rf-module {
-  margin-top: 2rem;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(180deg, #052c54 0%, #031d34 100%);
+  margin-top: 2.4rem;
+  padding: 1.6rem 2rem;
+  background: linear-gradient(180deg, rgba(5,44,84,0.9) 0%, rgba(3,29,52,0.95) 100%);
   border-radius: 16px;
   color: #ffffff;
-  box-shadow: 0 0 25px rgba(0,0,0,0.4);
-  animation: fadeIn 0.6s ease-in-out;
+  box-shadow: 0 10px 36px rgba(2,6,23,0.55);
+  animation: fadeIn 0.6s ease-in-out both;
+  border: 1px solid rgba(255,255,255,0.025);
+  clear: both;
 }
 
 .rf-title {
   font-size: 1.4rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 1rem;
+  color: #cfeffd;
+  text-shadow: 0 6px 18px rgba(3,12,22,0.45);
 }
 
-.rf-status {
-  font-size: 1rem;
-}
+.rf-status { font-size: 1rem; }
+.rf-trained { color: var(--success); font-weight: 700; }
+.rf-untrained { color: #f87171; font-weight: 700; }
 
-.rf-trained {
-  color: #4ade80;
-}
+.rf-classification { margin: 0.8rem 0 1.2rem; font-size: 1.05rem; }
 
-.rf-untrained {
-  color: #f87171;
-}
-
-.rf-classification {
-  margin: 0.8rem 0 1.2rem;
-  font-size: 1.05rem;
-}
-
-.rf-normal {
-  color: #22c55e;
-}
-
-.rf-anomalous {
-  color: #facc15;
-}
+.rf-normal { color: var(--success); }
+.rf-anomalous { color: var(--warning); }
 
 .rf-metrics {
   display: grid;
@@ -312,47 +474,41 @@ h1, h2, h3, h4, h5, p, label, td {
 
 .rf-metric p {
   margin-bottom: 0.4rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #e0f2fe;
 }
 
+/* barras base */
 .rf-bar-bg {
-  background: #0f3758;
-  border-radius: 6px;
+  background: #07263d;
+  border-radius: 8px;
   height: 12px;
   overflow: hidden;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25);
 }
 
 .rf-bar {
   height: 100%;
-  border-radius: 6px;
-  transition: width 0.6s ease;
+  border-radius: 8px;
+  transition: width 0.6s cubic-bezier(.2,.9,.3,1);
 }
 
-.rf-bar-f1 {
-  background: #60a5fa;
-}
-
-.rf-bar-precision {
-  background: #34d399;
-}
-
-.rf-bar-recall {
-  background: #fbbf24;
-}
+/* colores y degradados para las barras */
+.rf-bar-f1 { background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+.rf-bar-precision { background: linear-gradient(90deg, #34d399, #10b981); }
+.rf-bar-recall { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
 
 .rf-counters {
   margin-top: 1.5rem;
   display: flex;
   justify-content: space-around;
   font-size: 0.95rem;
-  color: #dbeafe;
+  color: var(--muted);
 }
 
 /* =========================
    RANDOM FOREST — ADICIÓN SEGURA
-   (añadir al final de styles.css)
-   No toca otras reglas existentes; usa mayor especificidad
+   (específico dentro del dashboard)
 ========================= */
 
 /* Contenedor específico dentro del dashboard para evitar colisiones */
@@ -367,7 +523,7 @@ h1, h2, h3, h4, h5, p, label, td {
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-/* pequeño efecto hover (solo visual) */
+/* ligero hover */
 .dashboard-container .rf-panel:hover {
   transform: translateY(-4px);
   box-shadow: 0 18px 40px rgba(0,0,0,0.55);
@@ -406,6 +562,7 @@ h1, h2, h3, h4, h5, p, label, td {
   color: #d6f1ff;
 }
 
+/* barra de fondo (contenedor) */
 .dashboard-container .rf-panel .rf-bar {
   height: 14px;
   background: rgba(255,255,255,0.04);
@@ -414,14 +571,15 @@ h1, h2, h3, h4, h5, p, label, td {
   box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25);
 }
 
+/* relleno con transición suave y sombra */
 .dashboard-container .rf-panel .rf-bar-fill {
   height: 100%;
   border-radius: 10px;
-  transition: width 0.7s cubic-bezier(.2,.9,.3,1);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  transition: width 0.85s cubic-bezier(.18,.9,.25,1);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.22);
 }
 
-/* colores por indicador (si existen clases) */
+/* colores por indicador */
 .dashboard-container .rf-panel .rf-bar-f1 .rf-bar-fill { background: linear-gradient(90deg,#60a5fa,#3b82f6); }
 .dashboard-container .rf-panel .rf-bar-precision .rf-bar-fill { background: linear-gradient(90deg,#34d399,#10b981); }
 .dashboard-container .rf-panel .rf-bar-recall .rf-bar-fill { background: linear-gradient(90deg,#fbbf24,#f59e0b); }
@@ -441,6 +599,7 @@ h1, h2, h3, h4, h5, p, label, td {
   border-radius: 10px;
   min-width: 140px;
   text-align: center;
+  box-shadow: 0 8px 22px rgba(2,6,23,0.38);
 }
 
 .dashboard-container .rf-panel .rf-summary-label {
@@ -465,3 +624,7 @@ h1, h2, h3, h4, h5, p, label, td {
     flex: 1 1 100%;
   }
 }
+
+/* =========================
+   FIN DEL ARCHIVO
+========================= */

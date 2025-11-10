@@ -44,10 +44,9 @@ export default function Dashboard() {
   const makeInitialVars = () =>
     variableTemplate.map((v) => ({
       ...v,
-      data: [{ x: 0, y: 0 }], // punto inicial para que se renderice desde el inicio
+      data: [{ x: 0, y: 0 }],
     }));
 
-  // Inicializa todas las boyas con su estructura base
   useEffect(() => {
     setVariablesByBuoy((prev) => {
       const copy = { ...prev };
@@ -58,13 +57,11 @@ export default function Dashboard() {
     });
   }, []);
 
-  // Genera lecturas simultáneas para todas las boyas
   useEffect(() => {
     const interval = setInterval(() => {
       setReadingIndexGlobal((prevIndex) => {
         const next = prevIndex >= 50 ? 1 : prevIndex + 1;
 
-        // generar lecturas para TODAS las boyas
         setVariablesByBuoy((prevVars) => {
           const newVars = { ...prevVars };
 
@@ -78,8 +75,10 @@ export default function Dashboard() {
             vars.forEach((vv) => {
               let newY;
               if (vv.title.includes("pH")) newY = reading.pH;
-              else if (vv.title.includes("Temperatura")) newY = reading.temperature;
-              else if (vv.title.includes("Conductividad")) newY = reading.conductivity;
+              else if (vv.title.includes("Temperatura"))
+                newY = reading.temperature;
+              else if (vv.title.includes("Conductividad"))
+                newY = reading.conductivity;
               else if (vv.title.includes("Oxígeno")) newY = reading.oxygen;
               else if (vv.title.includes("Turbidez")) newY = reading.turbidity;
               else newY = 0;
@@ -91,32 +90,6 @@ export default function Dashboard() {
 
             newVars[buoyId] = vars;
 
-            // Inserta en BD
-            (async () => {
-              try {
-                if (supabase) {
-                  await supabase.from("readings").insert([
-                    {
-                      buoy_id: buoyId,
-                      reading_index: next,
-                      pH: reading.pH,
-                      temperature: reading.temperature,
-                      conductivity: reading.conductivity,
-                      oxygen: reading.oxygen,
-                      turbidity: reading.turbidity,
-                      timestamp: new Date().toISOString(),
-                    },
-                  ]);
-                }
-              } catch (err) {
-                console.warn(
-                  "Error insertando lectura en Supabase:",
-                  err.message || err
-                );
-              }
-            })();
-
-            // Clasificación con RandomForest
             try {
               const X = [
                 [
@@ -145,9 +118,7 @@ export default function Dashboard() {
                 precision: Math.min(1, prev.precision + 0.003),
                 recall: Math.min(1, prev.recall + 0.002),
               }));
-            } catch (err) {
-              // ignorar
-            }
+            } catch (err) {}
           });
 
           return newVars;
@@ -155,94 +126,13 @@ export default function Dashboard() {
 
         return next;
       });
-    }, 5000);
+    }, 500);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Entrenamiento periódico con todos los datos de la BD
-  useEffect(() => {
-    let trainer = null;
-    const trainLoop = async () => {
-      try {
-        if (!supabase) return;
-        const { data, error } = await supabase
-          .from("readings")
-          .select(
-            "buoy_id, reading_index, pH, temperature, conductivity, oxygen, turbidity"
-          )
-          .order("timestamp", { ascending: true });
-
-        if (error) {
-          console.warn("Error cargando lecturas:", error);
-          return;
-        }
-        if (!data || data.length < 30) return;
-
-        const X = [];
-        const y = [];
-        data.forEach((r) => {
-          X.push([
-            Number(r.pH),
-            Number(r.temperature),
-            Number(r.conductivity),
-            Number(r.oxygen),
-            Number(r.turbidity),
-          ]);
-          const isAnom =
-            Number(r.pH) < 7 ||
-            Number(r.pH) > 9 ||
-            Number(r.temperature) < 25 ||
-            Number(r.temperature) > 40 ||
-            Number(r.conductivity) < 5000 ||
-            Number(r.conductivity) > 30000 ||
-            Number(r.oxygen) < 3 ||
-            Number(r.oxygen) > 7 ||
-            Number(r.turbidity) < 0 ||
-            Number(r.turbidity) > 250;
-          y.push(isAnom ? 1 : 0);
-        });
-
-        if (X.length >= 30 && new Set(y).size >= 2) {
-          rfRef.current = new RandomForest({ nEstimators: 12, maxDepth: 6 });
-          await rfRef.current.fit(X, y);
-
-          const total = y.length;
-          const anomalies = y.filter((v) => v === 1).length;
-          const normals = total - anomalies;
-          const precision = normals / total;
-          const recall = anomalies / total;
-          const f1 = (2 * precision * recall) / (precision + recall || 1);
-          setRfMetrics((prev) => ({
-            ...prev,
-            f1: Number(f1.toFixed(3)),
-            precision: Number(precision.toFixed(3)),
-            recall: Number(recall.toFixed(3)),
-          }));
-          await supabase.from("models").insert([
-            {
-              name: "RandomForest",
-              version: "auto",
-              accuracy: (normals / total).toFixed(3),
-              precision: precision.toFixed(3),
-              recall: recall.toFixed(3),
-              f1_score: Number(f1.toFixed(3)),
-              total_anomalies: anomalies,
-              total_normal: normals,
-            },
-          ]);
-        }
-      } catch (err) {
-        console.warn("Error entrenamiento RF:", err);
-      }
-      trainer = setTimeout(trainLoop, 15000);
-    };
-
-    trainLoop();
-    return () => clearTimeout(trainer);
-  }, []);
-
-  const variablesForSelected = variablesByBuoy[selectedBuoy] || makeInitialVars();
+  const variablesForSelected =
+    variablesByBuoy[selectedBuoy] || makeInitialVars();
 
   const promedios = useMemo(() => {
     const findAvg = (title) => {
@@ -273,75 +163,31 @@ export default function Dashboard() {
 
       <BuoySelector
         selected={selectedBuoy}
-        onChange={(val) => {
-          setSelectedBuoy(Number(val));
-        }}
+        onChange={(val) => setSelectedBuoy(Number(val))}
       />
 
       <BuoyMap selectedBuoy={selectedBuoy} />
 
-      <div className="variable-row">
-        {variablesForSelected.map((v, idx) => (
-          <VariableCard key={idx} {...v} />
-        ))}
-      </div>
-
-      <div className="rf-module">
-        <h3 className="rf-title">Modelo de Detección de Anomalías (Random Forest)</h3>
-        <p className="rf-status">
-          Estado del modelo:{" "}
-          <span className={rfRef.current ? "rf-trained" : "rf-untrained"}>
-            {rfRef.current ? "Entrenado" : "No entrenado"}
-          </span>
-        </p>
-
-        <p className="rf-classification">
-          Clasificación actual:{" "}
-          <span
-            className={
-              rfMetrics.lastClass === "Normal" ? "rf-normal" : "rf-anomalous"
-            }
-          >
-            {rfMetrics.lastClass}
-          </span>
-        </p>
-
-        <div className="rf-metrics">
-          <div className="rf-metric">
-            <p>F1 Score</p>
-            <div className="rf-bar-bg">
-              <div
-                className="rf-bar rf-bar-f1"
-                style={{ width: `${rfMetrics.f1 * 100}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="rf-metric">
-            <p>Precisión</p>
-            <div className="rf-bar-bg">
-              <div
-                className="rf-bar rf-bar-precision"
-                style={{ width: `${rfMetrics.precision * 100}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="rf-metric">
-            <p>Recall</p>
-            <div className="rf-bar-bg">
-              <div
-                className="rf-bar rf-bar-recall"
-                style={{ width: `${rfMetrics.recall * 100}%` }}
-              />
-            </div>
+      {/* Nueva disposición principal con Random Forest más delgado */}
+      <div className="dashboard-main-row">
+        <div className="dashboard-left">
+          <div className="variable-row">
+            {variablesForSelected.map((v, idx) => (
+              <VariableCard key={idx} {...v} />
+            ))}
           </div>
         </div>
 
-        <div className="rf-counters">
-          <div>
-            <strong>Anomalías detectadas:</strong> {rfMetrics.totalAnomalies}
-          </div>
+        <div className="dashboard-right">
+          <ModelMetrics
+            metricas={{
+              f1: rfMetrics.f1,
+              precision: rfMetrics.precision,
+              recall: rfMetrics.recall,
+              anomalies: rfMetrics.totalAnomalies,
+            }}
+            randomForest={rfRef.current}
+          />
         </div>
       </div>
     </div>

@@ -1,3 +1,7 @@
+// ======== ESTADO PERSISTENTE DE CONDUCTIVIDAD ========
+// Mantiene la última base por cada boya entre llamadas sucesivas
+const conductivityState = {};
+
 export function simulateSensorReading(buoyId = 1) {
   // Desfase pseudoaleatorio único por boya
   const offset = (buoyId * 13.37) % 7;
@@ -8,22 +12,43 @@ export function simulateSensorReading(buoyId = 1) {
   const oxyBase = 5.2 - offset * 0.08;
   const turbBase = 70 + offset * 3;
 
-  // Boyas 1, 6 y 7 con alta conductividad
-  const conductivityBase =
-    buoyId === 1 || buoyId === 6 || buoyId === 7
-      ? randBetween(20000, 30000)
-      : randBetween(5000, 15000);
+  // ==== CONDUCTIVIDAD BASE AJUSTADA SEGÚN UBICACIÓN ====
+  const seaBuoys = [1, 6, 7];
+  let conductivityBase;
+
+  // Si la boya tiene un estado previo, lo usamos como base
+  if (conductivityState[buoyId] !== undefined) {
+    conductivityBase = conductivityState[buoyId];
+    // Le agregamos una pequeña deriva suave, evitando saltos bruscos
+    const drift =
+      seaBuoys.includes(buoyId) ? randBetween(-150, 150) : randBetween(-300, 300);
+    conductivityBase = clamp(conductivityBase + drift, 5000, 30000);
+  } else {
+    // Primera lectura (inicializa la base según ubicación)
+    if (seaBuoys.includes(buoyId)) {
+      conductivityBase = 26000 + Math.sin(Date.now() / 1.5e7 + buoyId) * 800;
+    } else {
+      conductivityBase = 8000 + Math.sin(Date.now() / 1.5e7 + buoyId) * 1200;
+    }
+  }
+
+  // Guardamos el nuevo valor para la próxima llamada
+  conductivityState[buoyId] = conductivityBase;
+
+  // Pequeñas variaciones instantáneas sobre el patrón
+  const conductivity = noise(
+    conductivityBase,
+    seaBuoys.includes(buoyId) ? 400 : 700
+  );
 
   // ======== Generación normal (ruido físico leve) ========
   const pH = noise(phBase, 0.3);
   const temperature = noise(tempBase, 0.25);
-  const conductivity = noise(conductivityBase, 800);
   const oxygen = noise(oxyBase, 0.6);
   const turbidity = Math.abs(noise(turbBase, 15));
 
   // ======== Generación aleatoria de anomalías (~6%) ========
   if (Math.random() < 0.06) {
-    // probabilidad de qué variable se altera (prioriza turbidez)
     const anomalyType = weightedChoice([
       ["turbidity", 0.45],
       ["conductivity", 0.25],
