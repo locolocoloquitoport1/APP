@@ -33,12 +33,13 @@ export default function Dashboard() {
 
   const rfRef = useRef(new RandomForest({ nEstimators: 12, maxDepth: 6 }));
 
+  // <-- Aquí unifico la clave "unidad" que espera VariableCard y cambio la etiqueta
   const variableTemplate = [
-    { title: "pH", color: "#38bdf8", unit: "upH" },
-    { title: "Temperatura (°C)", color: "#fb923c", unit: "°C" },
-    { title: "Conductividad (µS/cm)", color: "#a855f7", unit: "µS/cm" },
-    { title: "Oxígeno Disuelto (mg/L)", color: "#22c55e", unit: "mg/L" },
-    { title: "Turbidez (NTU)", color: "#ef4444", unit: "NTU" },
+    { title: "pH", color: "#38bdf8", unidad: "upH" },
+    { title: "Temperatura (°C)", color: "#fb923c", unidad: "°C" },
+    { title: "Conductividad (S/m)", color: "#a855f7", unidad: "S/m" }, // <-- unidad convertida a S/m (presentación)
+    { title: "Oxígeno Disuelto (mg/L)", color: "#22c55e", unidad: "mg/L" },
+    { title: "Turbidez (NTU)", color: "#ef4444", unidad: "NTU" },
   ];
 
   const makeInitialVars = () =>
@@ -77,8 +78,9 @@ export default function Dashboard() {
               if (vv.title.includes("pH")) newY = reading.pH;
               else if (vv.title.includes("Temperatura"))
                 newY = reading.temperature;
+              // <-- Aquí convertimos SOLO para la presentación en las gráficas:
               else if (vv.title.includes("Conductividad"))
-                newY = reading.conductivity;
+                newY = parseFloat((reading.conductivity * 1e-4).toFixed(4)); // µS/cm -> S/m
               else if (vv.title.includes("Oxígeno")) newY = reading.oxygen;
               else if (vv.title.includes("Turbidez")) newY = reading.turbidity;
               else newY = 0;
@@ -140,7 +142,7 @@ export default function Dashboard() {
       if (!variable || variable.data.length === 0) return "—";
       const avg =
         variable.data.reduce((sum, p) => sum + p.y, 0) / variable.data.length;
-      return avg.toFixed(2);
+      return avg.toFixed(3);
     };
     return {
       ph: findAvg("pH"),
