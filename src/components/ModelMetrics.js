@@ -1,47 +1,58 @@
 import React from "react";
 
 /**
- * Muestra métricas básicas sacadas del objeto randomForest (si existe)
- * En este prototipo RF es simple; mostramos parámetros y un resumen
+ * Módulo de métricas y rendimiento del modelo Random Forest.
+ * Adaptado para Hydras3-Sim con diseño visual mejorado.
  */
-export default function ModelMetrics({ randomForest = null, data = [] }) {
-  if (!randomForest) {
-    return <div className="small">Modelo no inicializado aún</div>;
-  }
+export default function ModelMetrics({ metricas = {}, randomForest = null }) {
+  const { f1 = 0, precision = 0, recall = 0, anomalies = 0 } = metricas;
 
-  const nEstimators = randomForest.nEstimators || "—";
-  const maxDepth = randomForest.maxDepth || "—";
-  const sampleRatio = randomForest.sampleRatio || "—";
-
-  // compute simple confusion-like counts from recent data if model exposes predict
-  const recent = data.slice(-200);
-  let counts = { Normal: 0, Anomalous: 0 };
-  if (recent.length > 0) {
-    recent.forEach(r => {
-      counts[r.classification] = (counts[r.classification] || 0) + 1;
-    });
-  }
+  const barras = [
+    { label: "F1 Score", value: f1 * 100, color: "#38bdf8" },
+    { label: "Precisión", value: precision * 100, color: "#22c55e" },
+    { label: "Recall", value: recall * 100, color: "#fb923c" },
+  ];
 
   return (
-    <div>
-      <div><small>Estimadores: <strong>{nEstimators}</strong></small></div>
-      <div><small>Profundidad máxima: <strong>{maxDepth}</strong></small></div>
-      <div><small>Muestra por árbol: <strong>{sampleRatio}</strong></small></div>
+    <div className="rf-panel">
+      <h3 className="rf-title">🔎 Módulo Random Forest — Detección de Anomalías</h3>
 
-      <hr />
+      <div className="rf-metrics">
+        {barras.map((b, i) => (
+          <div key={i} className="rf-bar-container">
+            <div className="rf-bar-label">
+              <span>{b.label}</span>
+              <span>{b.value.toFixed(1)}%</span>
+            </div>
+            <div className="rf-bar">
+              <div
+                className="rf-bar-fill"
+                style={{ width: `${b.value}%`, backgroundColor: b.color }}
+              />
+            </div>
+          </div>
+        ))}
 
-      <div><small>Registros en buffer: <strong>{data.length}</strong></small></div>
-      <div style={{marginTop:8}}>
-        <strong>Últimas clasificaciones</strong>
-        <table className="table">
-          <thead>
-            <tr><th>Clase</th><th>Cantidad</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Normal</td><td>{counts.Normal}</td></tr>
-            <tr><td>Anomalous</td><td>{counts.Anomalous}</td></tr>
-          </tbody>
-        </table>
+        <div className="rf-summary">
+          <div className="rf-summary-item">
+            <span className="rf-summary-label">Anomalías detectadas</span>
+            <span className="rf-summary-value">{anomalies}</span>
+          </div>
+
+          <div className="rf-summary-item">
+            <span className="rf-summary-label">Estimadores</span>
+            <span className="rf-summary-value">
+              {randomForest?.nEstimators ?? "—"}
+            </span>
+          </div>
+
+          <div className="rf-summary-item">
+            <span className="rf-summary-label">Profundidad máx.</span>
+            <span className="rf-summary-value">
+              {randomForest?.maxDepth ?? "—"}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

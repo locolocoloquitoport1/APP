@@ -257,3 +257,211 @@ h1, h2, h3, h4, h5, p, label, td {
   .variable-card { flex: 1 1 100%; }
   .header-right { flex-wrap: wrap; }
 }
+
+/* =========================
+   RANDOM FOREST MODULE
+========================= */
+
+.rf-module {
+  margin-top: 2rem;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(180deg, #052c54 0%, #031d34 100%);
+  border-radius: 16px;
+  color: #ffffff;
+  box-shadow: 0 0 25px rgba(0,0,0,0.4);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.rf-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.rf-status {
+  font-size: 1rem;
+}
+
+.rf-trained {
+  color: #4ade80;
+}
+
+.rf-untrained {
+  color: #f87171;
+}
+
+.rf-classification {
+  margin: 0.8rem 0 1.2rem;
+  font-size: 1.05rem;
+}
+
+.rf-normal {
+  color: #22c55e;
+}
+
+.rf-anomalous {
+  color: #facc15;
+}
+
+.rf-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+.rf-metric p {
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: #e0f2fe;
+}
+
+.rf-bar-bg {
+  background: #0f3758;
+  border-radius: 6px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.rf-bar {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+.rf-bar-f1 {
+  background: #60a5fa;
+}
+
+.rf-bar-precision {
+  background: #34d399;
+}
+
+.rf-bar-recall {
+  background: #fbbf24;
+}
+
+.rf-counters {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: space-around;
+  font-size: 0.95rem;
+  color: #dbeafe;
+}
+
+/* =========================
+   RANDOM FOREST — ADICIÓN SEGURA
+   (añadir al final de styles.css)
+   No toca otras reglas existentes; usa mayor especificidad
+========================= */
+
+/* Contenedor específico dentro del dashboard para evitar colisiones */
+.dashboard-container .rf-panel {
+  background: linear-gradient(180deg, rgba(3,29,48,0.85) 0%, rgba(2,18,30,0.88) 100%);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-top: 32px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  color: #e6f6ff;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* pequeño efecto hover (solo visual) */
+.dashboard-container .rf-panel:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+}
+
+/* título del panel (específico) */
+.dashboard-container .rf-panel .rf-title {
+  color: #cfeffd;
+  font-size: 1.28rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Layout interior responsivo */
+.dashboard-container .rf-panel .rf-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+/* Cada barra de métrica */
+.dashboard-container .rf-panel .rf-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dashboard-container .rf-panel .rf-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.86rem;
+  color: #d6f1ff;
+}
+
+.dashboard-container .rf-panel .rf-bar {
+  height: 14px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25);
+}
+
+.dashboard-container .rf-panel .rf-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.7s cubic-bezier(.2,.9,.3,1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+/* colores por indicador (si existen clases) */
+.dashboard-container .rf-panel .rf-bar-f1 .rf-bar-fill { background: linear-gradient(90deg,#60a5fa,#3b82f6); }
+.dashboard-container .rf-panel .rf-bar-precision .rf-bar-fill { background: linear-gradient(90deg,#34d399,#10b981); }
+.dashboard-container .rf-panel .rf-bar-recall .rf-bar-fill { background: linear-gradient(90deg,#fbbf24,#f59e0b); }
+
+/* resumen inferior (cajas con números) */
+.dashboard-container .rf-panel .rf-summary {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.dashboard-container .rf-panel .rf-summary-item {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.03);
+  padding: 10px 14px;
+  border-radius: 10px;
+  min-width: 140px;
+  text-align: center;
+}
+
+.dashboard-container .rf-panel .rf-summary-label {
+  display: block;
+  font-size: 0.82rem;
+  color: #cdeffd;
+}
+
+.dashboard-container .rf-panel .rf-summary-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 6px;
+}
+
+/* versión móvil: una columna */
+@media (max-width: 900px) {
+  .dashboard-container .rf-panel .rf-metrics {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-container .rf-panel .rf-summary-item {
+    flex: 1 1 100%;
+  }
+}
