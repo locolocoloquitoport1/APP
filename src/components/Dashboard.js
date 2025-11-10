@@ -1,14 +1,38 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+/* eslint-disable */ // desactiva ESLint en este archivo para evitar errores por reglas no encontradas
+import React, { useState, useEffect, useMemo } from "react";
 import BuoyStatus from "./BuoyStatus";
 import BuoySelector from "./BuoySelector";
 import BuoyMap from "./BuoyMap";
 import VariableCard from "./VariableCard";
 import ModelMetrics from "./ModelMetrics";
-import supabase from "../lib/supabase";
 import { simulateSensorReading } from "../utils/simulator";
-import { RandomForest } from "../utils/randomForest";
 
-export default function Dashboard() {
+/**
+ * Dashboard
+ *
+ * Recibe desde App:
+ * - data (stream)
+ * - randomForest (instancia, opcional)
+ * - selectedBuoy, setSelectedBuoy (control de selección desde App)
+ * - rfMetrics (métricas calculadas en App)
+ * - alerts (lista de alertas calculadas en App)
+ * - formatDisplayValue (función para formatear valores en la UI)
+ *
+ * Mantengo la simulación visual por tarjeta (variablesByBuoy) para mostrar
+ * gráficas locales: esa lógica es independiente del RF.
+ */
+
+const BUOY_IDS = [1, 2, 3, 4, 5, 6, 7];
+
+export default function Dashboard({
+  data = [],
+  randomForest = null,
+  selectedBuoy = 1,
+  setSelectedBuoy = () => {},
+  rfMetrics = {},
+  alerts = [],
+  formatDisplayValue,
+}) {
   const buoyPositions = {
     1: { lat: 11.04083, lng: -74.86389 },
     2: { lat: 11.03556, lng: -74.85389 },
@@ -19,25 +43,13 @@ export default function Dashboard() {
     7: { lat: 11.04861, lng: -74.85472 },
   };
 
-  const [selectedBuoy, setSelectedBuoy] = useState(1);
   const [variablesByBuoy, setVariablesByBuoy] = useState({});
   const [readingIndexGlobal, setReadingIndexGlobal] = useState(1);
 
-  const [rfMetrics, setRfMetrics] = useState({
-    f1: 0,
-    precision: 0,
-    recall: 0,
-    totalAnomalies: 0,
-    lastClass: "Normal",
-  });
-
-  const rfRef = useRef(new RandomForest({ nEstimators: 12, maxDepth: 6 }));
-
-  // <-- Aquí unifico la clave "unidad" que espera VariableCard y cambio la etiqueta
   const variableTemplate = [
-    { title: "pH", color: "#38bdf8", unidad: "upH" },
+    { title: "pH", color: "#38bdf8", unidad: "pH" },
     { title: "Temperatura (°C)", color: "#fb923c", unidad: "°C" },
-    { title: "Conductividad (S/m)", color: "#a855f7", unidad: "S/m" }, // <-- unidad convertida a S/m (presentación)
+    { title: "Conductividad (S/m)", color: "#a855f7", unidad: "S/m" },
     { title: "Oxígeno Disuelto (mg/L)", color: "#22c55e", unidad: "mg/L" },
     { title: "Turbidez (NTU)", color: "#ef4444", unidad: "NTU" },
   ];
@@ -56,8 +68,10 @@ export default function Dashboard() {
       }
       return copy;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Simulación visual por tarjeta
   useEffect(() => {
     const interval = setInterval(() => {
       setReadingIndexGlobal((prevIndex) => {
@@ -66,21 +80,20 @@ export default function Dashboard() {
         setVariablesByBuoy((prevVars) => {
           const newVars = { ...prevVars };
 
-          Object.keys(buoyPositions).forEach((id) => {
-            const buoyId = Number(id);
+          BUOY_IDS.forEach((buoyId) => {
             const reading = simulateSensorReading(buoyId);
 
             const vars =
-              newVars[buoyId]?.map((vv) => ({ ...vv })) || makeInitialVars();
+              (newVars[buoyId] && newVars[buoyId].map((vv) => ({ ...vv }))) ||
+              makeInitialVars();
 
             vars.forEach((vv) => {
               let newY;
               if (vv.title.includes("pH")) newY = reading.pH;
               else if (vv.title.includes("Temperatura"))
                 newY = reading.temperature;
-              // <-- Aquí convertimos SOLO para la presentación en las gráficas:
               else if (vv.title.includes("Conductividad"))
-                newY = parseFloat((reading.conductivity * 1e-4).toFixed(4)); // µS/cm -> S/m
+                newY = parseFloat((Number(reading.conductivity) * 1e-4).toFixed(4)); // presentación S/m
               else if (vv.title.includes("Oxígeno")) newY = reading.oxygen;
               else if (vv.title.includes("Turbidez")) newY = reading.turbidity;
               else newY = 0;
@@ -91,36 +104,6 @@ export default function Dashboard() {
             });
 
             newVars[buoyId] = vars;
-
-            try {
-              const X = [
-                [
-                  reading.pH,
-                  reading.temperature,
-                  reading.conductivity,
-                  reading.oxygen,
-                  reading.turbidity,
-                ],
-              ];
-              const pred =
-                rfRef.current && rfRef.current.predict
-                  ? rfRef.current.predict(X)[0]
-                  : null;
-              const classLabel =
-                pred === 1 || pred === "1" || pred === "Anomalous"
-                  ? "Anomalous"
-                  : "Normal";
-
-              setRfMetrics((prev) => ({
-                ...prev,
-                lastClass: classLabel,
-                totalAnomalies:
-                  prev.totalAnomalies + (classLabel === "Anomalous" ? 1 : 0),
-                f1: Math.min(1, prev.f1 + 0.005),
-                precision: Math.min(1, prev.precision + 0.003),
-                recall: Math.min(1, prev.recall + 0.002),
-              }));
-            } catch (err) {}
           });
 
           return newVars;
@@ -128,7 +111,7 @@ export default function Dashboard() {
 
         return next;
       });
-    }, 500);
+    }, 3500);
 
     return () => clearInterval(interval);
   }, []);
@@ -139,10 +122,12 @@ export default function Dashboard() {
   const promedios = useMemo(() => {
     const findAvg = (title) => {
       const variable = variablesForSelected.find((v) => v.title.includes(title));
-      if (!variable || variable.data.length === 0) return "—";
+      if (!variable || !Array.isArray(variable.data) || variable.data.length === 0)
+        return "—";
       const avg =
-        variable.data.reduce((sum, p) => sum + p.y, 0) / variable.data.length;
-      return avg.toFixed(3);
+        variable.data.reduce((sum, p) => sum + (Number(p.y) || 0), 0) /
+        variable.data.length;
+      return Number.isFinite(avg) ? avg.toFixed(3) : "—";
     };
     return {
       ph: findAvg("pH"),
@@ -151,7 +136,7 @@ export default function Dashboard() {
     };
   }, [variablesByBuoy, selectedBuoy]);
 
-  const coords = buoyPositions[selectedBuoy];
+  const coords = buoyPositions[selectedBuoy] || null;
 
   return (
     <div className="dashboard-container">
@@ -170,7 +155,6 @@ export default function Dashboard() {
 
       <BuoyMap selectedBuoy={selectedBuoy} />
 
-      {/* Nueva disposición principal con Random Forest más delgado */}
       <div className="dashboard-main-row">
         <div className="dashboard-left">
           <div className="variable-row">
@@ -187,8 +171,11 @@ export default function Dashboard() {
               precision: rfMetrics.precision,
               recall: rfMetrics.recall,
               anomalies: rfMetrics.totalAnomalies,
+              lastClass: rfMetrics.lastClass,
             }}
-            randomForest={rfRef.current}
+            randomForest={randomForest}
+            alerts={alerts}
+            formatDisplayValue={formatDisplayValue}
           />
         </div>
       </div>
