@@ -10,7 +10,7 @@ import {
   Tooltip,
   CategoryScale,
 } from "chart.js";
-import ChartModal from "./ChartModal";
+
 
 ChartJS.register(
   TimeScale,

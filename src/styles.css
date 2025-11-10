@@ -3,22 +3,25 @@
 ========================= */
 
 :root{
-  /* Paleta y variables para fácil ajuste */
-  --bg-1: #001c36;
-  --bg-2: #002b55;
-  --glass: rgba(255,255,255,0.04);
-  --card-bg: rgba(2,20,34,0.55);
-  --muted: #dbeafe;
-  --text: #f5faff;
-  --accent: #3b82f6;
-  --accent-2: #60a5fa;
-  --accent-3: #10b981;
-  --success: #22c55e;
-  --danger: #ff6961;
-  --warning: #fbbf24;
-  --glass-strong: rgba(255,255,255,0.03);
+  /* Nueva paleta inspirada en la imagen: azul profundo y acentos fríos */
+  --bg-1: #071230;        /* very deep navy (top) */
+  --bg-2: #092a52;        /* medium navy (bottom) */
+  --glass: rgba(255,255,255,0.03);
+  --card-bg: linear-gradient(180deg, rgba(9,28,50,0.55), rgba(5,20,38,0.45));
+  --muted: #cfe8ff;
+  --text: #f7fbff;
+  --accent: #5fc0ff;      /* cyan accent for highlights */
+  --accent-2: #3b82f6;    /* vivid blue (buttons) */
+  --accent-3: #9b7cff;    /* soft purple accent for panels */
+  --success: #2ee08a;     /* green for success */
+  --danger: #ff7b7b;
+  --warning: #ffc857;
+  --glass-strong: rgba(255,255,255,0.04);
   --glass-weak: rgba(255,255,255,0.02);
   --shadow-dark: rgba(2,6,23,0.6);
+  --card-border: rgba(255,255,255,0.035);
+  --panel-glow: rgba(95,192,255,0.06);
+  --header-accent: linear-gradient(90deg, rgba(95,192,255,0.12), rgba(155,124,255,0.06));
 }
 
 * { box-sizing: border-box; }
@@ -26,10 +29,10 @@
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
-  /* Fondo más sutil y moderno */
+  /* Fondo inspirado en la pantalla: suave gradiente vertical */
   background:
-    radial-gradient(1200px 600px at 10% 20%, rgba(59,130,246,0.06), transparent 12%),
-    linear-gradient(160deg, var(--bg-1), var(--bg-2) 80%);
+    radial-gradient(1200px 600px at 8% 20%, rgba(95,192,255,0.03), transparent 12%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
   color: var(--text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -39,7 +42,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, p, label, td {
-  color: #ffffff;
+  color: var(--text);
   margin: 0;
 }
 
@@ -59,8 +62,8 @@ h1, h2, h3, h4, h5, p, label, td {
   align-items: center;
   height: 100vh;
   background:
-    radial-gradient(circle at 30% 30%, rgba(96,165,250,0.06), rgba(0,22,40,0.7)),
-    linear-gradient(160deg, rgba(0,22,40,0.85), rgba(0,10,20,0.95));
+    radial-gradient(circle at 30% 30%, rgba(95,192,255,0.03), rgba(0,22,40,0.7)),
+    linear-gradient(180deg, rgba(0,22,40,0.85), rgba(0,10,20,0.95));
   color: var(--text);
   animation: fadeIn 1s ease-in-out both;
   padding: 24px;
@@ -72,7 +75,7 @@ h1, h2, h3, h4, h5, p, label, td {
   letter-spacing: 0.6px;
   font-weight: 700;
   color: var(--text);
-  text-shadow: 0 6px 18px rgba(11,27,46,0.28);
+  text-shadow: 0 6px 18px rgba(3,12,22,0.28);
 }
 
 .login-container form {
@@ -107,7 +110,7 @@ h1, h2, h3, h4, h5, p, label, td {
 
 .login-container button {
   padding: 12px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  background: linear-gradient(90deg, var(--accent-2), #60a5fa);
   color: white;
   border: none;
   border-radius: 10px;
@@ -144,11 +147,10 @@ h1, h2, h3, h4, h5, p, label, td {
    DASHBOARD GENERAL
 ========================= */
 .dashboard-container {
-  /* reducido para evitar exceso de scroll */
-  padding: 20px 32px;
-  background: linear-gradient(160deg, var(--bg-1), var(--bg-2) 80%);
+  padding: 20px 34px;
+  background: linear-gradient(160deg, rgba(3,8,20,0.15), rgba(0,0,0,0) 80%);
   min-height: 100vh;
-  color: #ffffff;
+  color: var(--text);
   animation: fadeIn 0.6s ease-in-out both;
   position: relative; /* necesario para overlay pseudo-element */
 }
@@ -165,20 +167,81 @@ h1, h2, h3, h4, h5, p, label, td {
 }
 
 /* =========================
+   HEADER (MEJOR DISPOSICIÓN DEL TÍTULO)
+   Mejoramos la disposición del título (más profesional, como en la imagen)
+========================= */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.dashboard-header .title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dashboard-header h1 {
+  font-size: 1.6rem;
+  letter-spacing: -0.2px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  text-shadow: 0 6px 18px rgba(3,12,22,0.25);
+}
+
+.dashboard-header .subtitle {
+  font-size: 0.92rem;
+  color: rgba(239,249,255,0.86);
+  opacity: 0.92;
+  margin-top: 2px;
+}
+
+/* area para acciones (botones, avatar) */
+.dashboard-header .header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* estilo de los botones en header para que se vean como en la imagen */
+.logout-btn, .edit-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  color: #fff;
+  background: var(--accent-2);
+  box-shadow: 0 8px 20px rgba(59,130,246,0.12);
+}
+.logout-btn {
+  background: #ffffff;                 /* fondo blanco */
+  color: #0b1220 !important;          /* texto oscuro para contraste */
+  border: 1px solid rgba(2,6,23,0.06);/* ligero borde para definición */
+  box-shadow: 0 6px 18px rgba(11,27,46,0.06);
+}
+.edit-btn {
+  background: linear-gradient(90deg,#13b08b,#34d399);
+}
+
+/* =========================
    HEADER DE LA BOYA
 ========================= */
 .dashboard-header-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, rgba(0,47,95,0.45), rgba(0,30,60,0.3));
-  border-radius: 20px;
-  /* padding reducido para compactar */
-  padding: 14px 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 8px 26px rgba(0,0,0,0.35);
-  backdrop-filter: blur(8px) saturate(120%);
-  border: 1px solid var(--glass-strong);
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: 18px;
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 26px rgba(2,6,23,0.28);
+  backdrop-filter: blur(6px) saturate(110%);
+  border: 1px solid var(--card-border);
 }
 
 .header-left {
@@ -195,7 +258,7 @@ h1, h2, h3, h4, h5, p, label, td {
 
 .coords {
   font-size: 0.95rem;
-  color: #dbeafe;
+  color: rgba(207,232,255,0.9);
   opacity: 0.95;
 }
 
@@ -214,23 +277,22 @@ h1, h2, h3, h4, h5, p, label, td {
   display: flex;
   gap: 16px;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 /* env boxes */
 .env-box {
-  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
   border-radius: 12px;
   padding: 8px 14px;
   text-align: center;
   min-width: 100px;
-  border: 1px solid rgba(255,255,255,0.03);
-  box-shadow: 0 8px 20px rgba(2,6,23,0.35);
+  border: 1px solid rgba(255,255,255,0.02);
+  box-shadow: 0 6px 16px rgba(3,12,30,0.22);
 }
 .env-box h4 {
   margin: 0;
   font-size: 0.92rem;
-  color: #bae6fd;
+  color: #cfe8ff;
 }
 .env-box p {
   margin: 4px 0 0;
@@ -267,7 +329,7 @@ h1, h2, h3, h4, h5, p, label, td {
 .map-container {
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+  box-shadow: 0 14px 40px rgba(2,6,23,0.32);
   margin-bottom: 18px;
   border: 1px solid rgba(255,255,255,0.02);
 }
@@ -286,16 +348,15 @@ h1, h2, h3, h4, h5, p, label, td {
 /* tarjeta más grande por defecto */
 .variable-card {
   position: relative;
-  background: linear-gradient(180deg, rgba(2,20,34,0.64), rgba(3,36,60,0.5));
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 16px;
-  /* ya no usamos flex-basis; con grid se maneja el tamaño */
-  box-shadow: 0 12px 36px rgba(2,6,23,0.48);
+  box-shadow: 0 10px 30px rgba(2,6,23,0.28), 0 1px 0 var(--panel-glow) inset;
   min-width: 0;
   min-height: 160px;
   transition: transform 0.22s cubic-bezier(.2,.9,.2,1), box-shadow 0.22s, opacity 0.18s;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.03);
+  border: 1px solid var(--card-border);
   cursor: pointer;
 }
 
@@ -307,14 +368,14 @@ h1, h2, h3, h4, h5, p, label, td {
   top: -40%;
   width: 180%;
   height: 180%;
-  background: radial-gradient(600px 200px at 30% 30%, rgba(255,255,255,0.02), transparent 18%);
+  background: radial-gradient(600px 200px at 30% 30%, rgba(95,192,255,0.03), transparent 18%);
   transform: rotate(-12deg);
   pointer-events: none;
 }
 
 .variable-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 22px 46px rgba(2,6,23,0.55);
+  box-shadow: 0 26px 60px rgba(2,6,23,0.36);
 }
 
 /* estado cuando un card está expandido — requiere que JS añada la clase 'expanded' al card y 'has-expanded' al .dashboard-container */
@@ -334,8 +395,8 @@ h1, h2, h3, h4, h5, p, label, td {
 
 /* cuando hay un expandido, atenuar/recortar las demás tarjetas */
 .dashboard-container.has-expanded .variable-card:not(.expanded) {
-  filter: blur(2px) saturate(.9);
-  opacity: 0.28;
+  filter: blur(2px) saturate(.95);
+  opacity: 0.26;
   transform: scale(0.98);
   pointer-events: none;
 }
@@ -343,7 +404,7 @@ h1, h2, h3, h4, h5, p, label, td {
 /* título y tabla */
 .variable-title {
   font-size: 1.02rem;
-  color: #ffffff;
+  color: #e6f8ff;
   margin-bottom: 10px;
   font-weight: 700;
 }
@@ -352,7 +413,7 @@ h1, h2, h3, h4, h5, p, label, td {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.88rem;
-  color: #e0f2fe;
+  color: #dbeffd;
 }
 .variable-table td {
   padding: 4px 0;
@@ -369,12 +430,12 @@ h1, h2, h3, h4, h5, p, label, td {
   padding: 10px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
   border: 1px solid rgba(255,255,255,0.02);
-  box-shadow: inset 0 -2px 8px rgba(0,0,0,0.35);
+  box-shadow: inset 0 -2px 8px rgba(0,0,0,0.2);
   transition: box-shadow 0.25s, transform 0.25s;
 }
 
 /* mejoras específicas para canvas: asegurar tamaño y añadir micro-interacción */
-.chart-container:hover { box-shadow: inset 0 -2px 14px rgba(0,0,0,0.42); transform: translateY(-2px); }
+.chart-container:hover { box-shadow: inset 0 -2px 14px rgba(0,0,0,0.28); transform: translateY(-2px); }
 
 .chart-container canvas {
   width: 100% !important;
@@ -415,11 +476,11 @@ h1, h2, h3, h4, h5, p, label, td {
   inset: 0;
   pointer-events: none;
   border-radius: 12px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.00) 0%, rgba(255,255,255,0.01) 50%, rgba(255,255,255,0.00) 100%);
+  background: linear-gradient(90deg, rgba(95,192,255,0.00) 0%, rgba(95,192,255,0.01) 50%, rgba(95,192,255,0.00) 100%);
   background-size: 480px 100%;
   animation: shimmer 3.2s linear infinite;
   mix-blend-mode: overlay;
-  opacity: 0.12;
+  opacity: 0.10;
 }
 
 /* =========================
@@ -432,7 +493,7 @@ h1, h2, h3, h4, h5, p, label, td {
 @media (max-width: 1200px) {
   /* mantener 3 columnas si cabe, si no se ajusta se hará wrapping natural */
   .variable-row { grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .dashboard-container { padding: 18px 28px; }
+  .dashboard-container { padding: 16px 26px; }
 }
 @media (max-width: 1000px) {
   .variable-row { grid-template-columns: repeat(2, 1fr); } /* 2 columnas en tablet: quedarán 2 + 2 + 1... */
@@ -442,7 +503,7 @@ h1, h2, h3, h4, h5, p, label, td {
   .variable-card .recharts-surface { height: 150px !important; }
 }
 @media (max-width: 800px) {
-  .dashboard-container { padding: 14px 18px; }
+  .dashboard-container { padding: 12px 14px; }
   .header-right { gap: 10px; }
 }
 @media (max-width: 600px) {
@@ -461,24 +522,24 @@ h1, h2, h3, h4, h5, p, label, td {
 .rf-module {
   margin-top: 2.4rem;
   padding: 1.6rem 2rem;
-  background: linear-gradient(180deg, rgba(5,44,84,0.9) 0%, rgba(3,29,52,0.95) 100%);
+  background: linear-gradient(180deg, rgba(7,18,36,0.9) 0%, rgba(5,14,28,0.95) 100%);
   border-radius: 16px;
-  color: #ffffff;
-  box-shadow: 0 10px 36px rgba(2,6,23,0.55);
+  color: #eaf8ff;
+  box-shadow: 0 10px 36px rgba(2,6,23,0.48);
   animation: fadeIn 0.6s ease-in-out both;
-  border: 1px solid rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.02);
   clear: both;
 }
 
 .rf-title {
-  font-size: 1.4rem;
+  font-size: 1.28rem;
   font-weight: 700;
   margin-bottom: 1rem;
   color: #cfeffd;
   text-shadow: 0 6px 18px rgba(3,12,22,0.45);
 }
 
-.rf-status { font-size: 1rem; }
+.rf-status { font-size: 1rem; color: rgba(223,241,255,0.9); }
 .rf-trained { color: var(--success); font-weight: 700; }
 .rf-untrained { color: #f87171; font-weight: 700; }
 
@@ -497,12 +558,12 @@ h1, h2, h3, h4, h5, p, label, td {
 .rf-metric p {
   margin-bottom: 0.4rem;
   font-weight: 600;
-  color: #e0f2fe;
+  color: #dbeffd;
 }
 
 /* barras base */
 .rf-bar-bg {
-  background: #07263d;
+  background: rgba(11,28,46,0.6);
   border-radius: 8px;
   height: 12px;
   overflow: hidden;
@@ -513,12 +574,13 @@ h1, h2, h3, h4, h5, p, label, td {
   height: 100%;
   border-radius: 8px;
   transition: width 0.6s cubic-bezier(.2,.9,.3,1);
+  box-shadow: 0 4px 14px rgba(50,90,150,0.12) inset;
 }
 
 /* colores y degradados para las barras */
-.rf-bar-f1 { background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+.rf-bar-f1 { background: linear-gradient(90deg, #7ed4ff, #3b82f6); }
 .rf-bar-precision { background: linear-gradient(90deg, #34d399, #10b981); }
-.rf-bar-recall { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.rf-bar-recall { background: linear-gradient(90deg, #f9a8d4, #9b7cff); }
 
 .rf-counters {
   margin-top: 1.5rem;
@@ -535,12 +597,12 @@ h1, h2, h3, h4, h5, p, label, td {
 
 /* Contenedor específico dentro del dashboard para evitar colisiones */
 .dashboard-container .rf-panel {
-  background: linear-gradient(180deg, rgba(3,29,48,0.85) 0%, rgba(2,18,30,0.88) 100%);
-  border: 1px solid rgba(255,255,255,0.04);
+  background: linear-gradient(180deg, rgba(8,22,38,0.85) 0%, rgba(6,14,28,0.92) 100%);
+  border: 1px solid rgba(255,255,255,0.03);
   border-radius: 16px;
   padding: 18px 18px;
   margin-top: 24px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
   color: #e6f6ff;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
@@ -548,7 +610,7 @@ h1, h2, h3, h4, h5, p, label, td {
 /* ligero hover */
 .dashboard-container .rf-panel:hover {
   transform: translateY(-4px);
-  box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
 }
 
 /* título del panel (específico) */
@@ -587,7 +649,7 @@ h1, h2, h3, h4, h5, p, label, td {
 /* barra de fondo (contenedor) */
 .dashboard-container .rf-panel .rf-bar {
   height: 14px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.03);
   border-radius: 10px;
   overflow: hidden;
   box-shadow: inset 0 -1px 0 rgba(0,0,0,0.25);
@@ -646,3 +708,7 @@ h1, h2, h3, h4, h5, p, label, td {
     flex: 1 1 100%;
   }
 }
+
+/* =========================
+   FIN DEL ARCHIVO
+========================= */
