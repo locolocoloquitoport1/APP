@@ -6,6 +6,8 @@ import BuoyMap from "./BuoyMap";
 import VariableCard from "./VariableCard";
 import ModelMetrics from "./ModelMetrics";
 import { simulateSensorReading } from "../utils/simulator";
+// Importo la constante centralizada de intervalo. No se modifica nada más.
+import { DATA_INTERVAL_MS } from "../utils/simulator";
 
 /**
  * Dashboard
@@ -21,7 +23,7 @@ import { simulateSensorReading } from "../utils/simulator";
  * Mantengo la simulación visual por tarjeta (variablesByBuoy) para mostrar
  * gráficas locales: esa lógica es independiente del RF.
  */
-
+ 
 const BUOY_IDS = [1, 2, 3, 4, 5, 6, 7];
 
 export default function Dashboard({
@@ -32,6 +34,7 @@ export default function Dashboard({
   rfMetrics = {},
   alerts = [],
   formatDisplayValue,
+  dataIntervalMs, // acepto la prop si App.js la pasa; si no, uso DATA_INTERVAL_MS
 }) {
   const buoyPositions = {
     1: { lat: 11.04083, lng: -74.86389 },
@@ -73,6 +76,9 @@ export default function Dashboard({
 
   // Simulación visual por tarjeta
   useEffect(() => {
+    // Uso el valor pasado por prop si existe, en caso contrario la constante importada.
+    const intervalMs = dataIntervalMs || DATA_INTERVAL_MS || 3500;
+
     const interval = setInterval(() => {
       setReadingIndexGlobal((prevIndex) => {
         const next = prevIndex >= 50 ? 1 : prevIndex + 1;
@@ -111,10 +117,10 @@ export default function Dashboard({
 
         return next;
       });
-    }, 3500);
+    }, intervalMs);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [dataIntervalMs]);
 
   const variablesForSelected =
     variablesByBuoy[selectedBuoy] || makeInitialVars();

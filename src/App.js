@@ -6,6 +6,8 @@ import { simulateSensorReading } from "./utils/simulator";
 import { RandomForest } from "./utils/randomForest";
 import supabase from "./lib/supabase";
 import "./styles.css";
+// IMPORT DEL INTERVALO CENTRALIZADO
+import { DATA_INTERVAL_MS } from "./utils/simulator";
 
 /**
  * App
@@ -16,6 +18,8 @@ import "./styles.css";
  * - Normalizo alertas restauradas desde localStorage para asegurar que todas tengan `day`.
  * - Mantengo la persistencia de métricas y alertas; totalAnomalies se sincroniza con alerts.length
  *   al restaurar.
+ * - Uso DATA_INTERVAL_MS (importado desde src/utils/simulator) como único sitio para controlar
+ *   la frecuencia de generación de lecturas. Antes se usaba el literal 3000 ms.
  */
 
 export default function App() {
@@ -207,6 +211,7 @@ export default function App() {
     }
 
     // Intervalo de simulación y predicción: genera lecturas, las persiste y predice con RF
+    // ← USO DEL INTERVALO CENTRALIZADO EN LUGAR DEL LITERAL 3000
     const interval = setInterval(() => {
       const targetBuoy = selectedBuoyRef.current || 1;
 
@@ -323,7 +328,7 @@ export default function App() {
           };
         });
       }
-    }, 3000);
+    }, DATA_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [authenticated]);
@@ -448,6 +453,8 @@ export default function App() {
               rfMetrics={rfMetrics}
               alerts={alerts}
               formatDisplayValue={formatDisplayValue}
+              // PASAMOS EL INTERVALO A DASHBOARD (solo se agrega esta prop)
+              dataIntervalMs={DATA_INTERVAL_MS}
             />
           </main>
 
