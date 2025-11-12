@@ -13,9 +13,9 @@ import { DATA_INTERVAL_MS } from "./utils/simulator";
  * App
  *
  * Cambios en esta versión:
- * - Añadido campo `day` (YYYY-MM-DD) a cada alerta para poder mostrar el día en la tabla
- *   de valores anómalos.
- * - Normalizo alertas restauradas desde localStorage para asegurar que todas tengan `day`.
+ * - Añadido campo `day` (YYYY-MM-DD) y `time` (HH:MM:SS) a cada alerta/lectura para poder mostrar
+ *   día y hora concretos en la tabla de valores anómalos.
+ * - Normalizo alertas restauradas desde localStorage para asegurar que todas tengan `day` y `time`.
  * - Mantengo la persistencia de métricas y alertas; totalAnomalies se sincroniza con alerts.length
  *   al restaurar.
  * - Uso DATA_INTERVAL_MS (importado desde src/utils/simulator) como único sitio para controlar
@@ -144,15 +144,17 @@ export default function App() {
       if (rawAlerts) {
         const parsedAlerts = JSON.parse(rawAlerts);
         if (Array.isArray(parsedAlerts)) {
-          // Normalizar para asegurarnos de que cada alerta tenga `day`
+          // Normalizar para asegurarnos de que cada alerta tenga `day` y `time`
           const normalized = parsedAlerts
             .slice(-50)
             .map((a) => ({
               ...a,
-              // conservar day si ya existía; si no, derivarlo desde timestamp
               day:
                 a.day ||
                 (a.timestamp ? new Date(a.timestamp).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]),
+              time:
+                a.time ||
+                (a.timestamp ? new Date(a.timestamp).toISOString().split("T")[1].split(".")[0] : new Date().toISOString().split("T")[1].split(".")[0]),
             }));
           setAlerts(normalized);
           // sincronizar totalAnomalies con cantidad de alertas persistidas
@@ -199,6 +201,7 @@ export default function App() {
         try {
           const rawStream = localStorage.getItem(STREAM_KEY);
           if (!rawStream) {
+            // initial.fullRows ya incluye day/time con la modificación en generateInitialDataset
             localStorage.setItem(STREAM_KEY, JSON.stringify(initial.fullRows.slice(-500)));
             setDataStream(initial.fullRows.slice(-100));
           }
@@ -236,10 +239,14 @@ export default function App() {
         console.error("RF predict error:", err);
       }
 
+      const now = new Date();
+      const iso = now.toISOString();
       const row = {
         id: Date.now(),
         buoy_id: targetBuoy,
-        timestamp: new Date().toISOString(),
+        timestamp: iso,
+        day: iso.split("T")[0],
+        time: iso.split("T")[1].split(".")[0],
         ...reading,
         classification: pred,
       };
@@ -277,13 +284,13 @@ export default function App() {
         const valueRaw =
           variableKey === "conductivity" ? reading.conductivity : worst ? worst.value : null;
 
-        const now = new Date();
-        const alertDay = now.toISOString().split("T")[0]; // YYYY-MM-DD
-
+        const nowAlert = new Date();
+        const alertIso = nowAlert.toISOString();
         const alert = {
           buoyId: targetBuoy,
-          timestamp: now.toISOString(),
-          day: alertDay,
+          timestamp: alertIso,
+          day: alertIso.split("T")[0], // YYYY-MM-DD
+          time: alertIso.split("T")[1].split(".")[0], // HH:MM:SS
           variable: variableKey,
           valueRaw,
           deviationPct: parseFloat((deviationPct || 0).toFixed(2)),
@@ -355,10 +362,14 @@ export default function App() {
           reading.turbidity,
         ]);
         y.push(isAnom ? "Anomalous" : "Normal");
+
+        const ts = new Date(baseTs - (n - i) * 1000).toISOString();
         const row = {
           id: `${baseTs}-${buoyId}-${i}`,
           buoy_id: buoyId,
-          timestamp: new Date(baseTs - (n - i) * 1000).toISOString(),
+          timestamp: ts,
+          day: ts.split("T")[0],
+          time: ts.split("T")[1].split(".")[0],
           ...reading,
           classification: isAnom ? "Anomalous" : "Normal",
         };

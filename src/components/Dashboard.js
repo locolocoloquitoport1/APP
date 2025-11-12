@@ -16,7 +16,7 @@ import { DATA_INTERVAL_MS } from "../utils/simulator";
  * - data (stream)
  * - randomForest (instancia, opcional)
  * - selectedBuoy, setSelectedBuoy (control de selección desde App)
- * - rfMetrics (métricas calculadas en App)
+ * - rfMetrics (métricas calculadas enApp)
  * - alerts (lista de alertas calculadas en App)
  * - formatDisplayValue (función para formatear valores en la UI)
  *
@@ -57,10 +57,11 @@ export default function Dashboard({
     { title: "Turbidez (NTU)", color: "#ef4444", unidad: "NTU" },
   ];
 
+  // Cambio: inicializamos las series vacías (antes había un punto {x:0,y:0})
   const makeInitialVars = () =>
     variableTemplate.map((v) => ({
       ...v,
-      data: [{ x: 0, y: 0 }],
+      data: [], // <-- vacío para evitar que la primera lectura muestre ceros
     }));
 
   useEffect(() => {
@@ -105,6 +106,7 @@ export default function Dashboard({
               else newY = 0;
 
               const newPoint = { x: next, y: newY };
+              // Si next === 1, inicio nuevo buffer con el punto actual (no meter ceros previos)
               vv.data = next === 1 ? [newPoint] : [...(vv.data || []), newPoint];
               if (vv.data.length > 50) vv.data = vv.data.slice(-50);
             });
